@@ -1,4 +1,5 @@
 from tools import *
+import random
 
 def split_block(plain):
     bplain_arr = []
@@ -20,14 +21,35 @@ def split_block(plain):
     
     return bplain_arr
 
-def feistel(block):
+def feistel_encrypt(block, key):
     lrblock = [] #tuple of left right block
+    result = []
     for i in block:
         lrblock.append(split_array(i,64))
     
     print(lrblock)
 
+    for i in lrblock:
+        for j in range(16)
+            if j != 0:
+                random.seed(16-j)
+                key_feistel = random.sample(key,len(key))
+            else:
+                l = i[0]
+                r = i[1]
+                key_feistel = key
+            # temp = feistel(r,key_feistel) ^ l
+            l = r
+            r = temp
+        result.append(l)
+        result.append(r)
     
+    return result
+
+# def feistel_decrypt(cipher, key):
+
+
+
     # bplain = ''.join(format(ord(x), 'b').zfill(8) for x in plain)
     # bkey = ''.join(format(ord(x), 'b').zfill(8) for x in key)
 
