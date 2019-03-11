@@ -16,19 +16,20 @@ class Modes:
             while len(temp_key) < 8:
                 temp_key = key + ''.join(random.sample(key,len(key)))
             self.key = temp_key[:8]
-        self.bplain = pkcs5_padding(change_ascii_to_bits(self.plain))
+        self.bplain = change_ascii_to_bits(self.plain)
+        self.bplain_encrypt = pkcs5_padding(self.bplain)
         self.bkey = change_ascii_to_bits(self.key)
     
 
     def ecb_encrypt(self):
         result = ''
-        for i in self.bplain:
+        for i in self.bplain_encrypt:
             f = Feistel(i,self.bkey)
             result += f.encrypt()
         return result
 
     def ecb_decrypt(self):
-        cipher_arr = split_string_into_list_of_length_n(change_ascii_to_bits(self.plain),128)
+        cipher_arr = split_string_into_list_of_length_n(self.bplain,128)
         result = ""
         for i in cipher_arr:
             f = Feistel(i, self.bkey)
@@ -41,7 +42,7 @@ class Modes:
         index = 0
         result = ''
 
-        for i in self.bplain:
+        for i in self.bplain_encrypt:
             if index == 0:
                 c = iv
             i = bin(int(i,2) ^ int(change_ascii_to_bits(c),2))[2:].zfill(128)
@@ -53,7 +54,7 @@ class Modes:
         return result
     
     def cbc_decrypt(self):
-        input_bcipher = split_string_into_list_of_length_n(change_ascii_to_bits(self.plain),128)
+        input_bcipher = split_string_into_list_of_length_n(self.bplain,128)
         iv = 'rypythencryption'
         index = 0
         result = ''
@@ -75,7 +76,7 @@ class Modes:
         n = 1 #size of unit in bytes
         iv = 'rypythencryption'
         bitplain = ''
-        for i in self.bplain:
+        for i in self.bplain_encrypt:
             bitplain += i
         bitplain = split_string_into_list_of_length_n(bitplain,(n*8))
         index = 0
@@ -95,12 +96,10 @@ class Modes:
 
     def cfb_decrypt(self):
         n = 1 #size of unit in bytes
-        # f = Feistel(change_ascii_to_bits('rypythencryption'),self.bkey)
-        # iv = f.encrypt()
         iv = 'rypythencryption'
         bitplain = ''
-        bplain = change_ascii_to_bits(self.plain)
-        for i in bplain:
+        # not using self.bplain because not using padding
+        for i in self.bplain:
             bitplain += i
         bitplain = split_string_into_list_of_length_n(bitplain,(n*8))
         index = 0
@@ -114,16 +113,62 @@ class Modes:
             result += c
             x = x[:(len(x)-(n*8))] + i
             index += 1
-            
+
+        result = last_byte_check(result)
+        return result
+    
+    def ofb_encrypt(self):
+        n = 1 #size of unit in bytes
+        iv = 'rypythencryption'
+        bitplain = ''
+        for i in self.bplain_encrypt:
+            bitplain += i
+        bitplain = split_string_into_list_of_length_n(bitplain,(n*8))
+        index = 0
+        result = ''
+
+        for i in bitplain:
+            if index == 0:
+                x = change_ascii_to_bits(iv)
+            f = Feistel(x, self.bkey)
+            m = change_ascii_to_bits(f.encrypt()[0])
+            c = bin(int(m,2) ^ int(i,2))[2:].zfill(n*8)
+            result += c
+            x = x[:(len(x)-(n*8))] + m
+            index += 1
+        
+        result = change_bits_to_ascii(result)
+        return result
+
+    def ofb_decrypt(self):
+        n = 1 #size of unit in bytes
+        iv = 'rypythencryption'
+        bitplain = ''
+        # not using self.bplain because not using padding
+        for i in self.bplain:
+            bitplain += i
+        bitplain = split_string_into_list_of_length_n(bitplain,(n*8))
+        index = 0
+        result = ''
+
+        for i in bitplain:
+            if index == 0:
+                x = change_ascii_to_bits(iv)
+            f = Feistel(x, self.bkey)
+            m = change_ascii_to_bits(f.encrypt()[0])
+            c = bin(int(m,2) ^ int(i,2))[2:].zfill(n*8)
+            result += c
+            x = x[:(len(x)-(n*8))] + m
+            index += 1
+
         result = last_byte_check(result)
         return result
 
 
-
 if __name__ == "__main__":
     m = Modes('abcdefghijklmnopq','abcdefgh')
-    e = m.cfb_encrypt()
+    e = m.ofb_encrypt()
     print("hasil encrypt : ", e)
     n = Modes(e,'abcdefgh')
-    d = n.cfb_decrypt()
+    d = n.ofb_decrypt()
     print("hasil decrypt : ",d)
