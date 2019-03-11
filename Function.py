@@ -102,7 +102,7 @@ def pkcs5_padding(bplain):
         for i in range(lack):
             bplain += '{0:08b}'.format(lack)
     else:
-        for i in range(128):
+        for i in range(16):
             bplain += '{0:08b}'.format(128)
     bplain_arr = split_string_into_list_of_length_n(bplain,128)
     return bplain_arr
