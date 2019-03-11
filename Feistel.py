@@ -14,8 +14,7 @@ class Feistel:
         result = []
         resultbits = ''
         resultascii = ''
-        for i in self.binary_plain:
-            lrblock.append(split_string_into_list_of_length_n(i,64))   
+        lrblock.append(split_string_into_list_of_length_n(self.binary_plain,64))   
 
         for i in lrblock:
             for j in range(self.REPETITION):
@@ -37,13 +36,12 @@ class Feistel:
         resultascii = change_bits_to_ascii(resultbits)
         return resultascii
 
-    def decrypt(self, cipher):
+    def decrypt(self):
         lrblock = [] #tuple of left right block
         result = []
         resultascii = ''
-        for i in cipher:
-            lrblock.append(split_string_into_list_of_length_n(i,64))
-
+        lrblock.append(split_string_into_list_of_length_n(self.binary_plain,64))
+        
         for i in lrblock:
             l = i[0]
             r = i[1]
@@ -60,7 +58,6 @@ class Feistel:
             result.append(r)
         for i in result:
             resultascii += i
-        resultascii = last_byte_check(resultascii)
         return resultascii
 
 if __name__ == "__main__":
@@ -68,10 +65,16 @@ if __name__ == "__main__":
     key = "abcdefgh"
     bplain = pkcs5_padding(change_ascii_to_bits(plain))
     bkey = change_ascii_to_bits(key)
-    f = Feistel(bplain,bkey)
     # parameter encrypt dan decrypt udh bentuk bits dan kebagi dalam block2 @64bit
-    a = f.encrypt()
+    a = ""
+    for i in bplain:
+        f = Feistel(i,bkey)
+        a += f.encrypt()
     print('hasil encrypt : ', a)
     ablock = split_string_into_list_of_length_n(change_ascii_to_bits(a),128)
-    b = f.decrypt(ablock)
+    b = ""
+    for i in ablock:
+        f = Feistel(i,bkey)
+        b += f.decrypt()
+    b = last_byte_check(b)
     print('hasil decrypt : ', b)
