@@ -77,6 +77,43 @@ def switch_string_of_five(string):
     if len(string) != 5: raise Exception()
     return string[3] + string[4] + string[2] + string[0] + string[1]
 
+def change_ascii_to_bits(string):
+    result = ''
+    i=0
+    for x in string:
+        result += format(ord(x), 'b').zfill(8)
+        i+=1
+    
+    return result
+
+def change_bits_to_ascii(bits):
+    result = ''
+    ascii = split_string_into_list_of_length_n(bits,8)
+    for i in ascii:
+        result += chr(int(i,2))
+
+    return result
+
+# PKCS5 padding
+def pkcs5_padding(bplain):    
+    if len(bplain) % 128 != 0:
+        # lack in bytes
+        lack = int((128 - (len(bplain)%128)) / 8)
+        for i in range(lack):
+            bplain += '{0:08b}'.format(lack)
+    else:
+        for i in range(128):
+            bplain += '{0:08b}'.format(128)
+    bplain_arr = split_string_into_list_of_length_n(bplain,128)
+    return bplain_arr
+
+def last_byte_check(btext):
+    btext = split_string_into_list_of_length_n(btext,8)
+    count = int(btext[-1],2)
+    bits = ''.join(btext[:len(btext)-count])
+    result = change_bits_to_ascii(bits)
+    return result
+
 if __name__ == "__main__":
     src = "1111000011110000111100001111000011110000111100001111000011110000"
     key = "0011001100110011001100110011001100110011001100110011001100110011"
