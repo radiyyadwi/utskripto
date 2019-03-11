@@ -37,7 +37,6 @@ class Modes:
         return result
     
     def cbc_encrypt(self):
-        # input_plain = split_string_into_list_of_length_n(self.bplain,64)
         iv = 'rypythencryption'
         index = 0
         result = ''
@@ -63,7 +62,6 @@ class Modes:
             f = Feistel(i,self.bkey)
             if index == 0:
                 c = change_ascii_to_bits(iv)
-                print(c)
             p = f.decrypt()
             p = bin(int(p,2) ^ int(c,2))[2:].zfill(128)
             c = i
@@ -73,16 +71,59 @@ class Modes:
         result = last_byte_check(result)
         return result
 
-    # def cfb_encrypt(self):
+    def cfb_encrypt(self):
+        n = 1 #size of unit in bytes
+        iv = 'rypythencryption'
+        bitplain = ''
+        for i in self.bplain:
+            bitplain += i
+        bitplain = split_string_into_list_of_length_n(bitplain,(n*8))
+        index = 0
+        result = ''
+
+        for i in bitplain:
+            if index == 0:
+                x = change_ascii_to_bits(iv)
+            f = Feistel(x, self.bkey)
+            c = bin(int(change_ascii_to_bits(f.encrypt()[0]),2) ^ int(i,2))[2:].zfill(n*8)
+            result += c
+            x = x[:(len(x)-(n*8))] + c
+            index += 1
+        
+        result = change_bits_to_ascii(result)
+        return result
+
+    def cfb_decrypt(self):
+        n = 1 #size of unit in bytes
+        # f = Feistel(change_ascii_to_bits('rypythencryption'),self.bkey)
+        # iv = f.encrypt()
+        iv = 'rypythencryption'
+        bitplain = ''
+        bplain = change_ascii_to_bits(self.plain)
+        for i in bplain:
+            bitplain += i
+        bitplain = split_string_into_list_of_length_n(bitplain,(n*8))
+        index = 0
+        result = ''
+
+        for i in bitplain:
+            if index == 0:
+                x = change_ascii_to_bits(iv)
+            f = Feistel(x, self.bkey)
+            c = bin(int(change_ascii_to_bits(f.encrypt()[0]),2) ^ int(i,2))[2:].zfill(n*8)
+            result += c
+            x = x[:(len(x)-(n*8))] + i
+            index += 1
+            
+        result = last_byte_check(result)
+        return result
+
+
 
 if __name__ == "__main__":
     m = Modes('abcdefghijklmnopq','abcdefgh')
-    e = m.cbc_encrypt()
-    print("hasil encrypt : ",e)
+    e = m.cfb_encrypt()
+    print("hasil encrypt : ", e)
     n = Modes(e,'abcdefgh')
-    d = n.cbc_decrypt()
+    d = n.cfb_decrypt()
     print("hasil decrypt : ",d)
-
-
-
-
