@@ -73,3 +73,5 @@ if __name__ == "__main__":
     if opt == 10:
         e = m.counter_decrypt()
         savefile(e,savename)
+    end = time.time()
+    print("Waktu eksekusi = ", end-start)
