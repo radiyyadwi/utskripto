@@ -8,7 +8,7 @@ class Function:
         self.binary_plain = binary_plain
         self.binary_key = binary_key
 
-        self.REPETITION = 2
+        self.REPETITION = 8
 
     def __substitute_using_non_fibonacci_index(self):
         string = list(self.binary_plain)
@@ -64,6 +64,7 @@ class Function:
         for i in range(self.REPETITION):
             self.__substitute_using_non_fibonacci_index()
             self.__substitute_using_s_box()
+            self.__transpose()
             self.__slide()
             self.__xor_with_key()
         return self.binary_plain
@@ -81,7 +82,10 @@ def change_ascii_to_bits(string):
     result = ''
     i=0
     for x in string:
-        result += format(ord(x), 'b').zfill(8)
+        if type(x) is int:
+            result += format(x,'b').zfill(8)
+        else:
+            result += format(ord(x), 'b').zfill(8)
         i+=1
     
     return result
@@ -114,8 +118,25 @@ def last_byte_check(btext):
     result = change_bits_to_ascii(bits)
     return result
 
+def read_input_bytes(fileinput):
+    # plaintext = bytes('', 'utf-8')
+    with open(fileinput, "rb") as f:
+        byte_file = f.read()
+    plaintext = byte_file
+    return plaintext
+
+def save_output_bytes(data, outputname):
+    # if hasattr(data, 'encode'):
+    #     data = data.encode('utf-8')
+    with open(outputname, "wb+") as f:
+        f.write(data)
+
 if __name__ == "__main__":
     src = "1111000011110000111100001111000011110000111100001111000011110000"
     key = "0011001100110011001100110011001100110011001100110011001100110011"
-    f = Function(src, key)
-    print(f.run())
+    print(read_input_bytes('decrypt.jpg'))
+    input_ascii = ''
+    for i in read_input_bytes('small_cat.jpg'):
+        input_ascii += chr(i)
+    save_output_bytes(input_ascii,'result.txt')
+    f = Function(input_ascii, key)
