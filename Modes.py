@@ -7,7 +7,7 @@ class Modes:
         self.plain = plain
         if len(key)>8:
             random.seed(key)
-            self.key = ''.join(random.sample(key[:8]))
+            self.key = ''.join(random.sample(key[:8],8))
         else:
             # key < 8 bytes
             padding = 8-len(key)
@@ -194,22 +194,11 @@ class Modes:
         for i in bitplain:
             if index == 0:
                 x = change_ascii_to_bits(iv) + bin(counter)[2:]
-            print(len(x))
             f = Feistel(x, self.bkey)
             m = change_ascii_to_bits(f.encrypt())
             c = bin(int(m,2) ^ int(i,2))[2:].zfill(128)
             result += c
             x = change_ascii_to_bits(iv) + bin(counter + 3)[2:]
             index += 1
-        print(len(result))
         result = last_byte_check(result)
         return result
-
-
-if __name__ == "__main__":
-    m = Modes('abcdefghijklmnopq','abcdefgh')
-    e = m.counter_encrypt()
-    print("hasil encrypt : ", e)
-    n = Modes(e,'abcdefgh')
-    d = n.counter_decrypt()
-    print("hasil decrypt : ",d)
