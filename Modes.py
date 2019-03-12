@@ -144,7 +144,7 @@ class Modes:
         n = 1 #size of unit in bytes
         iv = 'rypythencryption'
         bitplain = ''
-        # not using self.bplain because not using padding
+        # not using self.bplain_encrypt because not using padding
         for i in self.bplain:
             bitplain += i
         bitplain = split_string_into_list_of_length_n(bitplain,(n*8))
@@ -169,7 +169,7 @@ class Modes:
         counter = int('1011000111110000101010101111111100000001000101011010111110001111',2)
         index = 0
         result = ''
-        
+
         for i in self.bplain_encrypt:
             if index == 0:
                 x = change_ascii_to_bits(iv) + bin(counter)[2:]
