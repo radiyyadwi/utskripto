@@ -164,11 +164,52 @@ class Modes:
         result = last_byte_check(result)
         return result
 
+    def counter_encrypt(self):
+        iv = 'rypythen'
+        counter = int('1011000111110000101010101111111100000001000101011010111110001111',2)
+        index = 0
+        result = ''
+        
+        for i in self.bplain_encrypt:
+            if index == 0:
+                x = change_ascii_to_bits(iv) + bin(counter)[2:]
+            f = Feistel(x, self.bkey)
+            m = change_ascii_to_bits(f.encrypt())
+            c = bin(int(m,2) ^ int(i,2))[2:].zfill(128)
+            result += c
+            x = change_ascii_to_bits(iv) + bin(counter + 3)[2:]
+            index += 1
+        
+        result = change_bits_to_ascii(result)
+        return result
+
+
+    def counter_decrypt(self):
+        iv = 'rypythen'
+        counter = int('1011000111110000101010101111111100000001000101011010111110001111',2)
+        index = 0
+        result = ''
+        bitplain = split_string_into_list_of_length_n(self.bplain, 128)
+
+        for i in bitplain:
+            if index == 0:
+                x = change_ascii_to_bits(iv) + bin(counter)[2:]
+            print(len(x))
+            f = Feistel(x, self.bkey)
+            m = change_ascii_to_bits(f.encrypt())
+            c = bin(int(m,2) ^ int(i,2))[2:].zfill(128)
+            result += c
+            x = change_ascii_to_bits(iv) + bin(counter + 3)[2:]
+            index += 1
+        print(len(result))
+        result = last_byte_check(result)
+        return result
+
 
 if __name__ == "__main__":
     m = Modes('abcdefghijklmnopq','abcdefgh')
-    e = m.ofb_encrypt()
+    e = m.counter_encrypt()
     print("hasil encrypt : ", e)
     n = Modes(e,'abcdefgh')
-    d = n.ofb_decrypt()
+    d = n.counter_decrypt()
     print("hasil decrypt : ",d)
